@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body class="lift:content_id=main">
+    <div id="main" class="lift:surround?with=default;at=content">
+      <head_merge>
+<!-- 	    <link type="text/css" rel="stylesheet" href="http://freebaselibs.com/static/suggest/1.3/suggest.min.css"></link> -->
+<!-- 	    <script type="text/javascript" src="js/min/jquery.min.js"></script> -->
+<!-- 	    <script type="text/javascript" src="http://freebaselibs.com/static/suggest/1.3/suggest.min.js"></script> -->
+	    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/freebase/suggest/4_2/suggest.min.css" />
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+		<script type="text/javascript" src="https://www.gstatic.com/freebase/suggest/4_2/suggest.min.js"></script>
+	    <script type="text/javascript">
+	    	jQuery(function() {
+	        	jQuery('#artist').suggest({type:'/music/artist'}).
+	        	bind('fb-select', 
+	                function(e, data) { 
+	                    $('#artist_id').val(data.id);    
+	                });
+	        });        
+	    </script>
+	    
+        <!-- JSON support for IE (needed to use JS API) -->
+        <script type="text/javascript" src="js/min/json2.min.js"></script>
+        
+        <!-- Flash embedding utility (needed to embed Cytoscape Web) -->
+        <script type="text/javascript" src="js/min/AC_OETags.min.js"></script>
+        
+        <!-- Cytoscape Web JS API (needed to reference org.cytoscapeweb.Visualization) -->
+        <script type="text/javascript" src="js/min/cytoscapeweb.min.js"></script>
+        
+        <script type="text/javascript">
+        	var vis = null;
+        
+            var visual_style = {
+                    global: {
+                        backgroundColor: '#ABCFD6'
+                    },
+                    nodes: {
+                        borderWidth: 1,
+                        labelVerticalAnchor: 'top',
+                        borderColor: '#ffffff',
+                        image: {
+                            discreteMapper: {
+                                attrName: 'type',
+                                entries: [
+                                    { attrValue: 'artist', value: 'images/band_big.jpg' },
+                                    { attrValue: 'member', value: 'images/member_small.jpg' },
+                                    { attrValue: 'relatedgroup', value: 'images/band_small.jpg' }
+                                ]
+                            }
+                        }, 
+                        size: {
+                            discreteMapper: {
+                                attrName: 'type',
+                                entries: [
+                                    { attrValue: 'artist', value: 75 },
+                                    { attrValue: 'member', value: 40 },
+                                    { attrValue: 'relatedgroup', value: 60 }
+                                ]
+                            }
+                        },
+                        labelHorizontalAnchor: 'center'
+                    },
+                    edges: {
+                        width: 3,
+                        color: '#0B94B1'
+                    }
+                };
+        	
+            function vis_draw() {
+            	vis.draw({ network: partialJson, visualStyle: visual_style });
+            }
+            
+            String.prototype.stripAccents = function() {
+                var translate_re = /[àáâãäāçčèéêëēģìíîïīķļñņòóôõöšùúûüūýÿžÀÁÂÃÄĀÇČÈÉÊËĒĢÌÍÎÏĪĶĻÑŅÒÓÔÕÖŠÙÚÛÜŪÝŽ]/g;
+                var translate = 'aaaaaacceeeeegiiiiiklnnooooosuuuuuyyzAAAAAACCEEEEEGIIIIIKLNNOOOOOSUUUUUYZ';
+                return (this.replace(translate_re, function(match){
+                    return translate.substr(translate_re.source.indexOf(match)-1, 1); })
+                );
+            };
+            
+            window.onload=function() {
+                var div_id = 'cytoscapeweb';
+                
+                
+                var options = {
+                    swfPath: 'swf/CytoscapeWeb',
+                    flashInstallerPath: 'swf/playerProductInstall'
+                };
+                
+                vis = new org.cytoscapeweb.Visualization(div_id, options);
+                vis.addListener('click', 'nodes', function(evt) {
+                    var node = evt.target;
+                    if (node.data.type == 'relatedgroup') {
+	                    $('#artist_id').val(node.data.id);
+	                    $('#artist').val(node.data.label);
+	                    $('#submit').click();
+                	}
+                });
+                vis.ready(function () {
+                	vis.removeAllContextMenuItems();
+                    vis.addContextMenuItem('More info...', 'nodes', 
+                        function (evt) {
+                            // Get the right-clicked node:
+                            var node = evt.target;
+                            window.open('http://www.freebase.com/view' + node.data.id);
+                    	}
+                    );
+                    vis.addContextMenuItem('Find Music...', 'nodes', 
+                        function (evt) {
+	                        // Get the right-clicked node:
+	                        var node = evt.target;
+	                        window.open(
+	                        		'http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias=digital-music%26field-keywords=' + 
+	                    	   		node.data.label.stripAccents().replace('\u0026', '+'));
+                    	}
+                	);
+                    
+                });
+            };
+        </script>
+        
+        <style>
+			  html, body { background-color: #ABCFD6; height: 90%; }
+			  body {
+			  	font-family: Verdana,Arial,Helvetica,Sans-serif;
+			  	font-size: 10pt;
+			  }
+			 #main { height: 100%; }
+             #cytoscapeweb, #ajax-loader { height: 100%; } 
+             #cytoscapeweb { margin-top:15px;  }
+             #spinner, #comments { display:block; margin-left: auto; margin-right: auto;  }
+             #comments { text-align: center; font-size: 10px; position:absolute; bottom: 15px; width: 90%; }
+        </style>
+	    
+      </head_merge> 
+      <div class="lift:comet?type=MemberQuery">
+        <form class="lift:form.ajax">
+		  <div id="members" />
+		  Put here a musical group and discover related ones: 
+		  <example:artist />
+		  <example:artist_id />
+          <example:submit />
+			<div id="ajax-loader" style="display:none;">
+				<img src="/images/ajax-loader.gif" id="spinner"/>
+			</div>
+        </form>
+      </div>
+
+		<div id="cytoscapeweb" />
+		<p id="comments">Your comments are welcome: ipcholkin&nbsp;@&nbsp;gmail.com</p>
+	</div>
+  </body>
+</html>
